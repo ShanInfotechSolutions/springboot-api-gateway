@@ -45,7 +45,7 @@ public ResponseEntity<Map<String, Object>> propertiesFallback() {
 public ResponseEntity<Map<String, Object>> agentsFallback() {
  return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(Map.of(
      "route", "agents-service",
-     "message", "Property Types endpoint is unavailable. Please try again later."
+     "message", "Agents endpoint is unavailable. Please try again later."
  ));
 }
 @RequestMapping(
@@ -55,8 +55,8 @@ public ResponseEntity<Map<String, Object>> agentsFallback() {
 		)
 		public ResponseEntity<Map<String, Object>> addressesFallback() {
 		 return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE).body(Map.of(
-		     "route", "property-service-property-types",
-		     "message", "Property Types endpoint is unavailable. Please try again later."
+		     "route", "addresses-service",
+		     "message", "Address endpoint is unavailable. Please try again later."
 		 ));
 		}
 @RequestMapping(
