@@ -22,7 +22,7 @@ spring:
         - id: owner-service
           uri: lb://SPRINGBOOTMICROSERVICESOWNERCLIENT
           predicates:
-            - Path=/api/owners/**
+            - Path=/api/owners/**, /api/auth/**
           filters:
             - name: CircuitBreaker
               args:
@@ -32,10 +32,6 @@ spring:
               args:
                 retries: 2
                 methods: GET
-            - id: owner-auth
-              uri: lb://SPRINGBOOTMICROSERVICESOWNERCLIENT
-              predicates:
-              - Path=/api/auth/**
 
         # Agent
         - id: agent-service
