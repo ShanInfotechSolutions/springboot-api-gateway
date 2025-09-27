@@ -1,122 +1,124 @@
 server:
-  port: 9190  # Gateway port
+  port: 9190
 
 spring:
   application:
     name: api-gateway
   main:
-    web-application-type: reactive
+    web-application-type: reactive   # Required by Spring Cloud Gateway
 
   cloud:
     gateway:
-      discovery:
-        locator:
-          enabled: false     # keep explicit routes
-      default-filters:
-        - RemoveRequestHeader=Cookie
-        - name: RequestSize
-          args:
-            maxSize: 2MB
-        - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin RETAIN_FIRST
+      server:
+        webflux:
+          discovery:
+            locator:
+              enabled: false   # keep explicit routes
+          default-filters:
+            - RemoveRequestHeader=Cookie
+            - name: RequestSize
+              args:
+                maxSize: 2MB
+            - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin RETAIN_FIRST
 
-      routes:
-        # Owner
-        - id: owner-service
-          uri: lb://SPRINGBOOTMICROSERVICESOWNERCLIENT
-          predicates:
-            - Path=/api/owners/**,/api/auth/**
-          filters:
-            - name: CircuitBreaker
-              args:
-                name: ownerCB
-                fallbackUri: forward:/fallback/owners
-            - name: Retry
-              args:
-                retries: 2
-                methods: GET
+          routes:
+            # Owner
+            - id: owner-service
+              uri: lb://OWNER-SERVICE
+              predicates:
+                - Path=/api/owners/**,/api/auth/**
+              filters:
+                - name: CircuitBreaker
+                  args:
+                    name: ownerCB
+                    fallbackUri: forward:/fallback/owners
+                - name: Retry
+                  args:
+                    retries: 2
+                    methods: GET
 
-        # Agent
-        - id: agent-service
-          uri: lb://SPRINGBOOTMICROSERVICESAGENTCLIENT
-          predicates:
-            - Path=/api/agents/**
-          filters:
-            - name: CircuitBreaker
-              args:
-                name: agentCB
-                fallbackUri: forward:/fallback/agents
-            - name: Retry
-              args:
-                retries: 2
-                methods: GET
+            # Agent
+            - id: agent-service
+              uri: lb://SPRINGBOOTMICROSERVICESAGENTCLIENT
+              predicates:
+                - Path=/api/agents/**
+              filters:
+                - name: CircuitBreaker
+                  args:
+                    name: agentCB
+                    fallbackUri: forward:/fallback/agents
+                - name: Retry
+                  args:
+                    retries: 2
+                    methods: GET
 
-        # Address
-        - id: address-service
-          uri: lb://SPRINGBOOTMICROSERVICESADDRESSCLIENT
-          predicates:
-            - Path=/api/addresses/**
-          filters:
-            - name: CircuitBreaker
-              args:
-                name: addressCB
-                fallbackUri: forward:/fallback/addresses
-            - name: Retry
-              args:
-                retries: 2
-                methods: GET
+            # Address
+            - id: address-service
+              uri: lb://SPRINGBOOTMICROSERVICESADDRESSCLIENT
+              predicates:
+                - Path=/api/addresses/**
+              filters:
+                - name: CircuitBreaker
+                  args:
+                    name: addressCB
+                    fallbackUri: forward:/fallback/addresses
+                - name: Retry
+                  args:
+                    retries: 2
+                    methods: GET
 
-        # Property (two controllers under the same service)
-        - id: property-service-properties
-          uri: lb://SPRINGBOOTMICROSERVICESPROPERTYCLIENT
-          predicates:
-            - Path=/api/properties/**
-          filters:
-            - name: CircuitBreaker
-              args:
-                name: propertyPropertiesCB
-                fallbackUri: forward:/fallback/property-properties
-            - name: Retry
-              args:
-                retries: 2
-                methods: GET
+            # Property (two controllers under same service)
+            - id: property-service-properties
+              uri: lb://SPRINGBOOTMICROSERVICESPROPERTYCLIENT
+              predicates:
+                - Path=/api/properties/**
+              filters:
+                - name: CircuitBreaker
+                  args:
+                    name: propertyPropertiesCB
+                    fallbackUri: forward:/fallback/property-properties
+                - name: Retry
+                  args:
+                    retries: 2
+                    methods: GET
 
-        - id: property-service-property-types
-          uri: lb://SPRINGBOOTMICROSERVICESPROPERTYCLIENT
-          predicates:
-            - Path=/api/property-types/**
-          filters:
-            - name: CircuitBreaker
-              args:
-                name: propertyTypesCB
-                fallbackUri: forward:/fallback/property-types
-            - name: Retry
-              args:
-                retries: 2
-                methods: GET
+            - id: property-service-property-types
+              uri: lb://SPRINGBOOTMICROSERVICESPROPERTYCLIENT
+              predicates:
+                - Path=/api/property-types/**
+              filters:
+                - name: CircuitBreaker
+                  args:
+                    name: propertyTypesCB
+                    fallbackUri: forward:/fallback/property-types
+                - name: Retry
+                  args:
+                    retries: 2
+                    methods: GET
 
-        # Property-Agent-Assignment (update URI to the actual Eureka ID you use)
-        - id: property-agent-assignment-service
-          uri: lb://SPRINGBOOTMICROSERVICESPROPERTYAGENTASSIGNMENTCLIENT
-          predicates:
-            - Path=/api/property-agent-assignments/**
-          filters:
-            - name: CircuitBreaker
-              args:
-                name: propertyAgentAssignCB
-                fallbackUri: forward:/fallback/property-agent-assignments
-            - name: Retry
-              args:
-                retries: 2
-                methods: GET
+            # Property-Agent-Assignment
+            - id: property-agent-assignment-service
+              uri: lb://SPRINGBOOTMICROSERVICESPROPERTYAGENTASSIGNMENTCLIENT
+              predicates:
+                - Path=/api/property-agent-assignments/**
+              filters:
+                - name: CircuitBreaker
+                  args:
+                    name: propertyAgentAssignCB
+                    fallbackUri: forward:/fallback/property-agent-assignments
+                - name: Retry
+                  args:
+                    retries: 2
+                    methods: GET
 
-      # Simple permissive CORS for dev; tighten for prod
-      globalcors:
-        corsConfigurations:
-          '[/**]':
-            allowedOrigins: "*"
-            allowedMethods: "*"
-            allowedHeaders: "*"
-            allowCredentials: false
+          # Global CORS (dev-friendly; tighten for prod)
+          globalcors:
+            cors-configurations:
+              '[/**]':
+                allowedOrigins: "*"
+                allowedMethods: "*"
+                allowedHeaders: "*"
+                allowCredentials: false
 
 eureka:
   client:
